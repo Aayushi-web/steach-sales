@@ -106,25 +106,24 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(spawnEmber, 350);
   }
 
-  // ---------- Contact form: no backend yet, so just confirm + reset ----------
+  // ---------- Contact form ----------
   var contactForm = document.getElementById('contactForm');
   var contactFormNote = document.getElementById('contactFormNote');
 
   if (contactForm) {
     contactForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      if (contactFormNote) {
-        contactFormNote.textContent = "Thanks! Your message has been received — we'll get back to you shortly.";
+      if (!contactForm.checkValidity()) {
+        return;
       }
-      contactForm.reset();
 
-      // clear the note after a while so it doesn't sit there forever
-      setTimeout(function () {
-        if (contactFormNote) {
-          contactFormNote.textContent = '';
-        }
-      }, 6000);
+      var submitBtn = contactForm.querySelector('.contact-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+      }
+      if (contactFormNote) {
+        contactFormNote.textContent = 'Sending your enquiry to info@stechsales.com...';
+      }
     });
   }
 
