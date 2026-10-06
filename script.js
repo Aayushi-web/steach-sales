@@ -116,7 +116,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
+      e.preventDefault();
+
       var submitBtn = contactForm.querySelector('.contact-submit-btn');
+      var originalBtnText = submitBtn ? submitBtn.textContent : '';
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
@@ -124,6 +127,59 @@ document.addEventListener('DOMContentLoaded', function () {
       if (contactFormNote) {
         contactFormNote.textContent = 'Sending your enquiry to info@stechsales.com...';
       }
+
+      var formData = new FormData(contactForm);
+
+      fetch('https://formsubmit.co/ajax/info@stechsales.com', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json'
+        }
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error('Form service returned an error.');
+          }
+          return response.json();
+        })
+        .then(function () {
+          contactForm.reset();
+          if (contactFormNote) {
+            contactFormNote.textContent = "Thanks! Your enquiry has been sent. We'll get back to you shortly.";
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+        })
+        .catch(function () {
+          var name = contactForm.querySelector('[name="name"]').value;
+          var email = contactForm.querySelector('[name="email"]').value;
+          var phone = contactForm.querySelector('[name="phone"]').value;
+          var subject = contactForm.querySelector('[name="subject"]').value;
+          var message = contactForm.querySelector('[name="message"]').value;
+          var mailSubject = 'Website enquiry: ' + subject;
+          var mailBody = [
+            'Name: ' + name,
+            'Email: ' + email,
+            'Phone: ' + phone,
+            'Subject: ' + subject,
+            '',
+            'Message:',
+            message
+          ].join('\n');
+
+          if (contactFormNote) {
+            contactFormNote.textContent = 'Email service could not send directly. Opening your email app with the enquiry details...';
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+
+          window.location.href = 'mailto:info@stechsales.com?subject=' + encodeURIComponent(mailSubject) + '&body=' + encodeURIComponent(mailBody);
+        });
     });
   }
 
